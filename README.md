@@ -225,3 +225,4 @@ github       = {https://github.com/rasbt/LLMs-from-scratch}
 <a href="https://github.com/BRZ911">  <img src="./imgs/profile/yongheng.jpg"  width="80" /></a>
 <a href="https://github.com/WPENGxs">  <img src="./imgs/profile/wpengxs.jpg"  width="80" /></a>
 <a href="https://github.com/lul0308">  <img src="./imgs/profile/chunlin.png"  width="80" /></a>
+<a href="https://github.com/llm-chaser">  <img src="./imgs/profile/llm-chaser.jpeg"  width="80" /></a>
