@@ -5,7 +5,13 @@
 
 # File for internal use (unit tests)
 
-from gpt import main
+import json
+from pathlib import Path
+
+import pytest
+import torch
+
+from gpt import GPTModel, LayerNorm, TransformerBlock, main
 
 expected = """
 ==================================================
@@ -38,3 +44,38 @@ def test_main(capsys):
 
     # Compare normalized strings
     assert normalized_output == normalized_expected
+
+
+@pytest.mark.parametrize("n_layers", [1, 3, 12])
+def test_notebook_model_matches_standalone(n_layers):
+    notebook = json.loads(Path(__file__).with_name("ch04.ipynb").read_text(encoding="utf-8"))
+    source = next(
+        "".join(cell["source"])
+        for cell in notebook["cells"]
+        if cell["cell_type"] == "code"
+        and "".join(cell["source"]).startswith("class GPTModel(")
+    )
+    namespace = {
+        "torch": torch,
+        "nn": torch.nn,
+        "LayerNorm": LayerNorm,
+        "TransformerBlock": TransformerBlock,
+    }
+    exec(source, namespace)
+    cfg = {
+        "vocab_size": 16,
+        "context_length": 4,
+        "emb_dim": 8,
+        "n_heads": 2,
+        "n_layers": n_layers,
+        "drop_rate": 0.0,
+        "qkv_bias": False,
+    }
+    torch.manual_seed(123)
+    notebook_model = namespace["GPTModel"](cfg)
+    torch.manual_seed(123)
+    standalone_model = GPTModel(cfg)
+
+    assert len(notebook_model.trf_blocks) == n_layers
+    tokens = torch.tensor([[1, 2, 3]])
+    torch.testing.assert_close(notebook_model(tokens), standalone_model(tokens))
